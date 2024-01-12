@@ -5,7 +5,6 @@ import Modal from '@mui/material/Modal';
 import Fade from '@mui/material/Fade';
 import Image from 'next/image';
 import '../css/weather.css';
-import { LoadingLine } from './Loading';
 
 const style = {
     position: 'absolute',
@@ -74,7 +73,7 @@ export default function AqiCheck({ aqiData }) {
     if (!aqiData) {
         return (
             <div>
-                <LoadingLine />
+                Loading...
             </div>
         );
     }
