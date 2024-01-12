@@ -260,7 +260,7 @@ export default function WeatherMain() {
             <div className="top">
                 <div className="buttons_wrapper">
                     <div>
-                        <SiteSelection fetchData={fetchData} />
+                        <SiteSelection fetchData={fetchData} userId={userId} />
                     </div>
                     <div>
                         <WindUnitConvert userId={userId} setWindUnit={setWindUnit} windUnit={windUnit}
