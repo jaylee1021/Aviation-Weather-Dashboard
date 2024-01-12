@@ -17,6 +17,7 @@ import SiteSelection from "./SiteSelection";
 import WindUnitConvert from "./WindUnitConvert";
 import TempUnitConvert from "./TempUnitConvert";
 import WeatherTable from "./WeatherTable";
+import AddNewLocation from "./AddNewSite";
 
 export default function WeatherMain() {
 
@@ -308,6 +309,7 @@ export default function WeatherMain() {
                         {aqiData && <AqiCheck aqiData={aqiData} />}
                     </div>
                     <Button style={{ margin: '0 10px' }} variant="outlined" onClick={logout}>Log Out</Button>
+                    <AddNewLocation userId={userId} />
                 </div>
             </div>
             {aqiData && <CustomCharts weatherData={forecast} fetchData={fetchData} aqiData={aqiData} userData={userData}
