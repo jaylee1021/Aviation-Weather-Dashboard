@@ -13,7 +13,6 @@ import ShowHide from "./ShowHide"; // ShowHide component
 import UpdateParams from "./UpdateParams"; // Updating operating window component
 import AqiCheck from "./AqiCheck"; // Air quality component
 import WeatherSummary from "./WeatherSummary"; // Weather summary component
-import { LoadingSpinningBubble } from "./Loading";
 import SiteSelection from "./SiteSelection";
 import WindUnitConvert from "./WindUnitConvert";
 import TempUnitConvert from "./TempUnitConvert";
