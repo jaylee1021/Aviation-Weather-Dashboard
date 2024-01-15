@@ -3,10 +3,12 @@ import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import Select from '@mui/material/Select';
+import axios from 'axios';
+import { useEffect, useState } from 'react';
 
-export default function SiteSelection({ fetchData, }) {
+export default function SiteSelection({ fetchData, userId }) {
 
-    const site = typeof window !== 'undefined' && localStorage.getItem('selectSite') ? localStorage.getItem('selectSite') : 'hsiland';
+    const site = typeof window !== 'undefined' && localStorage.getItem('selectSite') ? localStorage.getItem('selectSite') : '65a21922fc889f2bcd323d66';
 
     const handleSiteSelection = async (e) => {
         if (typeof window !== 'undefined') {
@@ -20,6 +22,19 @@ export default function SiteSelection({ fetchData, }) {
         }
     };
 
+    const [sites, setSites] = useState([]); // [
+    // const fetchSite = async () => {
+    useEffect(() => async () => {
+        await axios.get(`${process.env.NEXT_PUBLIC_SERVER_URL}/sites/user/${userId}`)
+            .then((response) => {
+                console.log('sites', response.data.sites);
+                setSites(response.data.sites);
+            })
+            .catch((error) => {
+                console.log(error);
+            });
+    }, [userId]);
+
     return (
         <FormControl variant="standard" sx={{ m: 1, minWidth: 120 }} style={{ margin: '10px 10px 10px 0' }}>
             <InputLabel id="site_select_label">Site</InputLabel>
@@ -31,9 +46,9 @@ export default function SiteSelection({ fetchData, }) {
                 label="Select_site"
                 name='selectSite'
             >
-                <MenuItem value={'hsiland'}>Hsiland</MenuItem>
-                <MenuItem value={'pdt10_hangar'}>PDT10 Hangar</MenuItem>
-                <MenuItem value={'pdt10_northpad'}>PDT10 North Pad</MenuItem>
+                {sites.map((site) => (
+                    <MenuItem key={site._id} value={site._id}>{site.siteName}</MenuItem>
+                ))}
             </Select>
         </FormControl>
     );
