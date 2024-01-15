@@ -18,6 +18,10 @@ import WindUnitConvert from "./WindUnitConvert";
 import TempUnitConvert from "./TempUnitConvert";
 import WeatherTable from "./WeatherTable";
 import AddNewLocation from "./AddNewSite";
+import InputLabel from '@mui/material/InputLabel';
+import MenuItem from '@mui/material/MenuItem';
+import FormControl from '@mui/material/FormControl';
+import Select from '@mui/material/Select';
 
 export default function WeatherMain() {
 
@@ -38,6 +42,8 @@ export default function WeatherMain() {
     const [tempLow, setTempLow] = useState('');
     const [tempHigh, setTempHigh] = useState('');
     const [aqiData, setAqiData] = useState();
+    const [sites, setSites] = useState([]);
+    const [singleSite, setSingleSite] = useState('');
     const router = useRouter();
 
     // conversion constants
@@ -87,6 +93,24 @@ export default function WeatherMain() {
         }
     }, [userId, fetchUser, router]);
 
+    const fetchSites = useCallback(async () => {
+        const res = await axios.get(`${process.env.NEXT_PUBLIC_SERVER_URL}/sites/user/${userId}`);
+        const fetchedSites = res.data.sites;
+        setSites(fetchedSites);
+        setLoading(false);
+    }, [userId]);
+
+    const fetchSingleSite = useCallback(async () => {
+        const selectSite = localStorage.getItem('selectSite') ? localStorage.getItem('selectSite') : '65a21922fc889f2bcd323d66';
+        axios.get(`${process.env.NEXT_PUBLIC_SERVER_URL}/sites/${selectSite}`)
+            .then((res) => {
+                setSingleSite(res.data.site);
+            })
+            .catch((err) => {
+                console.log(err);
+            });
+    }, []);
+
     // convert wind speed to knots
     const toKnots = useCallback(() => {
         // set wind speed and wind gust to knots
@@ -111,25 +135,10 @@ export default function WeatherMain() {
 
     // fetch weather data on page load and every minute
     const fetchData = useCallback(async () => {
-
-        const selectSite = localStorage.getItem('selectSite') ? localStorage.getItem('selectSite') : 'hsiland';
-        let latitude;
-        let longitude;
-        if (selectSite === 'hsiland' || localStorage.getItem('selectSite') === 'hsiland') {
-            latitude = process.env.NEXT_PUBLIC_HSILAND_LATITUDE;
-            longitude = process.env.NEXT_PUBLIC_HSILAND_LONGITUDE;
-        } else if (selectSite === 'pdt10_hangar' || localStorage.getItem('selectSite') === 'pdt10_hangar') {
-            latitude = process.env.NEXT_PUBLIC_PDT10_HANGAR_LATITUDE;
-            longitude = process.env.NEXT_PUBLIC_PDT10_HANGAR_LONGITUDE;
-        } else if (selectSite === 'pdt10_northpad' || localStorage.getItem('selectSite') === 'pdt10_northpad') {
-            latitude = process.env.NEXT_PUBLIC_PDT10_NORTH_PAD_LATITUDE;
-            longitude = process.env.NEXT_PUBLIC_PDT10_NORTH_PAD_LONGITUDE;
-        }
-
         try {
             const [weatherResponse, aqiResponse] = await Promise.all([
-                axios.get(`https://api.weatherapi.com/v1/forecast.json?key=${process.env.NEXT_PUBLIC_WEATHER_API_KEY}&q=${latitude},${longitude}`),
-                axios.get(`https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${latitude}&longitude=${longitude}&current=us_aqi&hourly=us_aqi&timezone=America%2FLos_Angeles&forecast_days=1`)
+                await axios.get(`https://api.weatherapi.com/v1/forecast.json?key=${process.env.NEXT_PUBLIC_WEATHER_API_KEY}&q=${singleSite.siteLatitude},${singleSite.siteLongitude}`),
+                await axios.get(`https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${singleSite.siteLatitude}&longitude=${singleSite.siteLongitude}&current=us_aqi&hourly=us_aqi&timezone=America%2FLos_Angeles&forecast_days=1`)
             ]);
             const weatherData = weatherResponse.data;
             setForecast(weatherData.forecast.forecastday[0].hour);
@@ -149,7 +158,7 @@ export default function WeatherMain() {
         } catch (error) {
             console.log(error);
         }
-    }, [toKnots, toMetersPerSec, windUnit]);
+    }, [toKnots, toMetersPerSec, windUnit, singleSite.siteLatitude, singleSite.siteLongitude]);
 
     // return operating window to default values
     const handleReturnToDefault = useCallback(async () => {
@@ -196,14 +205,18 @@ export default function WeatherMain() {
         setCurrentDateTime(`${formattedDate}, ${formattedTime}`);
     };
 
-    useEffect(() => {
+    useEffect(() => async () => {
         // Update time immediately on mount
         updateTime();
+        // Fetch sites immediately on mount
+        await fetchSites();
+        // Fetch single site immediately on mount
+        await fetchSingleSite();
         // Fetch data immediately on mount
-        fetchData();
+        await fetchData();
         // Check if it's midnight PST immediately on mount
         checkMidnightPST();
-    }, [fetchData, checkMidnightPST]);
+    }, [fetchData, checkMidnightPST, fetchSites, fetchSingleSite]);
 
     useEffect(() => {
         // run fetchData() every minute
@@ -262,6 +275,23 @@ export default function WeatherMain() {
                     <div>
                         <SiteSelection fetchData={fetchData} userId={userId} />
                     </div>
+                    {/* <div>
+                        <FormControl variant="standard" sx={{ m: 1, minWidth: 120 }} style={{ margin: '10px 10px 10px 0' }}>
+                            <InputLabel id="site_select_label">Site</InputLabel>
+                            <Select
+                                labelId="site_select"
+                                id="site_select_menu"
+                                // value={site}
+                                // onChange={handleSiteSelection}
+                                label="Select_site"
+                                name='selectSite'
+                            >
+                                {sites.map((site) => {
+                                    <MenuItem key={site._id} value={site.siteName}>{site.siteName}</MenuItem>;
+                                })}
+                            </Select>
+                        </FormControl>
+                    </div> */}
                     <div>
                         <WindUnitConvert userId={userId} setWindUnit={setWindUnit} windUnit={windUnit}
                             toKnots={toKnots} toMetersPerSec={toMetersPerSec} />
@@ -309,7 +339,7 @@ export default function WeatherMain() {
                         {aqiData && <AqiCheck aqiData={aqiData} />}
                     </div>
                     <Button style={{ margin: '0 10px' }} variant="outlined" onClick={logout}>Log Out</Button>
-                    <AddNewLocation userId={userId} />
+                    <AddNewLocation userId={userId} fetchSites={fetchSites} />
                 </div>
             </div>
             {aqiData && <CustomCharts weatherData={forecast} fetchData={fetchData} aqiData={aqiData} userData={userData}
