@@ -20,7 +20,7 @@ const style = {
     p: 4,
 };
 
-export default function AddNewLocation({ userId }) {
+export default function AddNewLocation({ userId, fetchSites }) {
     const [open, setOpen] = useState(false);
     const handleOpen = () => setOpen(true);
     const handleClose = () => setOpen(false);
@@ -36,6 +36,7 @@ export default function AddNewLocation({ userId }) {
             siteName: state.siteName, siteLatitude: state.siteLatitude, siteLongitude: state.siteLongitude, userId
         })
             .then((res) => {
+                fetchSites();
                 handleClose();
                 setState({
                     ...state, siteName: '', siteLatitude: '', siteLongitude: ''
