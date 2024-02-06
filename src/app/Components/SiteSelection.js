@@ -6,7 +6,7 @@ import Select from '@mui/material/Select';
 import axios from 'axios';
 import { useEffect, useState } from 'react';
 
-export default function SiteSelection({ fetchData, userId }) {
+export default function SiteSelection({ fetchSingleSite, fetchData, userId }) {
 
     const site = typeof window !== 'undefined' && localStorage.getItem('selectSite') ? localStorage.getItem('selectSite') : '65a21922fc889f2bcd323d66';
 
@@ -16,6 +16,7 @@ export default function SiteSelection({ fetchData, userId }) {
         }
 
         try {
+            fetchSingleSite();
             await fetchData();
         } catch (error) {
             console.log(error);
@@ -27,7 +28,6 @@ export default function SiteSelection({ fetchData, userId }) {
     useEffect(() => async () => {
         await axios.get(`${process.env.NEXT_PUBLIC_SERVER_URL}/sites/user/${userId}`)
             .then((response) => {
-                console.log('sites', response.data.sites);
                 setSites(response.data.sites);
             })
             .catch((error) => {
