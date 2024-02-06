@@ -213,10 +213,10 @@ export default function WeatherMain() {
         // Fetch single site immediately on mount
         await fetchSingleSite();
         // Fetch data immediately on mount
-        await fetchData();
+        singleSite && await fetchData();
         // Check if it's midnight PST immediately on mount
         checkMidnightPST();
-    }, [fetchData, checkMidnightPST, fetchSites, fetchSingleSite]);
+    }, [fetchData, checkMidnightPST, fetchSites, fetchSingleSite, singleSite]);
 
     useEffect(() => {
         // run fetchData() every minute
@@ -273,7 +273,7 @@ export default function WeatherMain() {
             <div className="top">
                 <div className="buttons_wrapper">
                     <div>
-                        <SiteSelection fetchData={fetchData} userId={userId} />
+                        <SiteSelection fetchSingleSite={fetchSingleSite} fetchData={fetchData} userId={userId} />
                     </div>
                     {/* <div>
                         <FormControl variant="standard" sx={{ m: 1, minWidth: 120 }} style={{ margin: '10px 10px 10px 0' }}>
