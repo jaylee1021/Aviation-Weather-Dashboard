@@ -96,11 +96,13 @@ export default function WeatherMain() {
     const fetchSites = useCallback(async () => {
         const res = await axios.get(`${process.env.NEXT_PUBLIC_SERVER_URL}/sites/user/${userId}`);
         const fetchedSites = res.data.sites;
+        console.log('fetchSites error');
         setSites(fetchedSites);
         setLoading(false);
     }, [userId]);
 
     const fetchSingleSite = useCallback(async () => {
+        console.log('fetchSingleSite error');
         const selectSite = localStorage.getItem('selectSite') ? localStorage.getItem('selectSite') : '65a21922fc889f2bcd323d66';
         axios.get(`${process.env.NEXT_PUBLIC_SERVER_URL}/sites/${selectSite}`)
             .then((res) => {
@@ -135,6 +137,7 @@ export default function WeatherMain() {
 
     // fetch weather data on page load and every minute
     const fetchData = useCallback(async () => {
+        console.log('is this error?');
         try {
             const [weatherResponse, aqiResponse] = await Promise.all([
                 await axios.get(`https://api.weatherapi.com/v1/forecast.json?key=${process.env.NEXT_PUBLIC_WEATHER_API_KEY}&q=${singleSite.siteLatitude},${singleSite.siteLongitude}`),
@@ -185,6 +188,7 @@ export default function WeatherMain() {
 
     // check if it's midnight PST and if it's midnight, run handleReturnToDefault()
     const checkMidnightPST = useCallback(() => {
+        console.log('this too?');
         const currentTime = new Date();
         const pacificTimeOffset = -8;
 
@@ -199,6 +203,7 @@ export default function WeatherMain() {
 
     // Function to update time
     const updateTime = () => {
+        console.log('how about this one');
         const currentTime = new Date();
         const formattedDate = currentTime.toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' });
         const formattedTime = currentTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
@@ -213,10 +218,10 @@ export default function WeatherMain() {
         // Fetch single site immediately on mount
         await fetchSingleSite();
         // Fetch data immediately on mount
-        singleSite && await fetchData();
+        await fetchData();
         // Check if it's midnight PST immediately on mount
         checkMidnightPST();
-    }, [fetchData, checkMidnightPST, fetchSites, fetchSingleSite, singleSite]);
+    }, []);
 
     useEffect(() => {
         // run fetchData() every minute

@@ -8,7 +8,8 @@ import { useEffect, useState } from 'react';
 
 export default function SiteSelection({ fetchSingleSite, fetchData, userId }) {
 
-    const site = typeof window !== 'undefined' && localStorage.getItem('selectSite') ? localStorage.getItem('selectSite') : '65a21922fc889f2bcd323d66';
+    const [sites, setSites] = useState([]); // [
+    const defaultValue = sites.find(site => site._id === localStorage.getItem('selectSite')) ? localStorage.getItem('selectSite') : '';
 
     const handleSiteSelection = async (e) => {
         if (typeof window !== 'undefined') {
@@ -16,23 +17,25 @@ export default function SiteSelection({ fetchSingleSite, fetchData, userId }) {
         }
 
         try {
-            fetchSingleSite();
+            await fetchSingleSite();
             await fetchData();
         } catch (error) {
             console.log(error);
         }
     };
 
-    const [sites, setSites] = useState([]); // [
-    // const fetchSite = async () => {
-    useEffect(() => async () => {
-        await axios.get(`${process.env.NEXT_PUBLIC_SERVER_URL}/sites/user/${userId}`)
-            .then((response) => {
+    useEffect(() => {
+        const fetchSites = async () => {
+            try {
+                const response = await axios.get(`${process.env.NEXT_PUBLIC_SERVER_URL}/sites/user/${userId}`);
+                console.log('siteSelection error');
                 setSites(response.data.sites);
-            })
-            .catch((error) => {
-                console.log(error);
-            });
+            } catch (error) {
+                console.error('Error fetching sites:', error);
+            }
+        };
+
+        fetchSites();
     }, [userId]);
 
     return (
@@ -41,7 +44,7 @@ export default function SiteSelection({ fetchSingleSite, fetchData, userId }) {
             <Select
                 labelId="site_select"
                 id="site_select_menu"
-                value={site}
+                value={defaultValue}
                 onChange={handleSiteSelection}
                 label="Select_site"
                 name='selectSite'
